@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+  db:
+    platform: linux/x86_64
+    image: mysql:5.7
+    networks:
+      - ruby000net1
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: myrootpass
+      MYSQL_USER: user
+
+  web:
+    build: .
+    # Dockerfileのあるディレクトリをして指定
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    depends_on:
+      - db
+    networks:
+      - ruby000net1
+    volumes: 
+      - .:/study_app/
+      # - ローカル側の同期させたいディレクトリ : コンテナ側の同期させたいディレクトリ
+      # .( docker-compose.ymlのあるディレクトリ、つまりローカル側のstudy_app配下 ) と /study_app/( コンテナ側のmyapp配下 ) を同期
+      # ローカルのstudy_app配下のファイルなどを編集すると、コンテナ側にも編集が反映
+    ports:
+      - 3000:3000
+
+networks:
+  ruby000net1:
+volumes:
+  mysql_data:
